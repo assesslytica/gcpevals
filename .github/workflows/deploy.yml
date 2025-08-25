@@ -19,6 +19,7 @@ jobs:
       with:
         workload_identity_provider: projects/144231203908/locations/global/workloadIdentityPools/githubpoolgcp/providers/githubactions
         service_account: GCPAutoevaluation@astute-fort-470107-d0.iam.gserviceaccount.com
+        audience: https://github.com/assesslytica/gcpevals
 
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
