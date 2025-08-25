@@ -1,15 +1,14 @@
-name: Test GCP Authentication
+name: Deploy to GCP
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
-  test-auth:
+  deploy:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -20,10 +19,9 @@ jobs:
       with:
         workload_identity_provider: projects/144231203908/locations/global/workloadIdentityPools/githubpoolgcp/providers/githubactions
         service_account: GCPAutoevaluation@astute-fort-470107-d0.iam.gserviceaccount.com
-        audience: https://github.com/assesslytica/gcpevals
 
-    - name: Verify authentication
-      run: |
-        echo "✅ Authentication successful!"
-        gcloud auth list
-        gcloud config get-value project
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Test authentication
+      run: gcloud auth list
