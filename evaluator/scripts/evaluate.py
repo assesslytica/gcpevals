@@ -59,8 +59,10 @@ def main():
         print("Usage: python evaluate.py <student_id>")
         sys.exit(1)
     student_id = sys.argv[1]
-    if os.path.exists('test_report.log'):
-        os.remove('test_report.log')
+    # Create/overwrite the log file and write a header
+    with open('test_report.log', 'w') as f:
+        f.write(f"Evaluation Report for student_id: {student_id}\n")
+        f.write("----------------------------------------\n")
     check_bucket(student_id)
     check_pubsub_topic(student_id)
     total = PASS + FAIL
@@ -69,6 +71,18 @@ def main():
         log("OVERALL: PASS")
     else:
         log("OVERALL: FAIL")
+    # Print the file contents for workflow logs and hint for download
+    print("\n--- test_report.log contents ---")
+    with open('test_report.log', 'r') as f:
+        print(f.read())
+    print("\nYou can download test_report.log from the workflow artifacts.")
+
+# If you want to upload the log to a bucket, add code here. For now, this is commented out as requested.
+# def upload_log_to_bucket(bucket_name, file_path):
+#     client = storage.Client()
+#     bucket = client.get_bucket(bucket_name)
+#     blob = bucket.blob(os.path.basename(file_path))
+#     blob.upload_from_filename(file_path)
 
 if __name__ == "__main__":
     main()
