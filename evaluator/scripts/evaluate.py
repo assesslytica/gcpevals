@@ -15,7 +15,12 @@ def log(msg):
 def check_bucket(student_id):
     global PASS, FAIL
     bucket_name = f"eval-{student_id}"
-    client = storage.Client()
+    project = os.environ.get('GOOGLE_CLOUD_PROJECT')
+    if not project:
+        log("FAIL: GOOGLE_CLOUD_PROJECT env var not set")
+        FAIL += 1
+        return
+    client = storage.Client(project=project)
     try:
         bucket = client.get_bucket(bucket_name)
         if bucket.location.lower() != 'asia-south1':
@@ -40,12 +45,12 @@ def check_bucket(student_id):
 def check_pubsub_topic(student_id):
     global PASS, FAIL
     topic_name = f"eval-topic-{student_id}"
-    publisher = pubsub_v1.PublisherClient()
     project = os.environ.get('GOOGLE_CLOUD_PROJECT')
     if not project:
         log("FAIL: GOOGLE_CLOUD_PROJECT env var not set")
         FAIL += 1
         return
+    publisher = pubsub_v1.PublisherClient()
     topic_path = publisher.topic_path(project, topic_name)
     try:
         topic = publisher.get_topic(request={"topic": topic_path})

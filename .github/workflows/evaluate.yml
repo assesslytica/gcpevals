@@ -26,6 +26,9 @@ jobs:
           service_account: GCPAutoevaluation@astute-fort-470107-d0.iam.gserviceaccount.com
           audience: https://github.com/assesslytica/gcpevals
 
+      - name: Show GCP Project
+        run: echo "PROJECT_ID=${{ steps.auth.outputs.project_id }}"
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
