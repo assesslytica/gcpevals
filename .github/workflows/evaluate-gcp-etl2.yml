@@ -1,0 +1,44 @@
+name: Evaluate GCP ETL2 (IoT Sensor Data)
+
+on:
+  workflow_dispatch:
+    inputs:
+      student_id:
+        description: 'Student ID (for table naming)'
+        required: true
+        type: string
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    env:
+      STUDENT_ID: ${{ github.event.inputs.student_id }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (OIDC)
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r evaluator-gcp-etl2/requirements.txt
+
+      - name: Run ETL2 evaluator
+        run: |
+          python evaluator-gcp-etl2/scripts/evaluate_etl2.py
+
+      - name: Upload evaluation log
+        uses: actions/upload-artifact@v4
+        with:
+          name: etl2-evaluation-log
+          path: etl2_evaluation.log

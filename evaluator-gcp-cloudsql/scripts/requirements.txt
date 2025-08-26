@@ -1,0 +1,4 @@
+google-cloud-sql
+google-cloud-sql-connector
+google-cloud-resource-manager
+mysql-connector-python

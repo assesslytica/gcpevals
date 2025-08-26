@@ -1,0 +1,57 @@
+name: Evaluate GCP Dataproc Student Resources
+
+on:
+  workflow_dispatch:
+    inputs:
+      student_id:
+        description: 'Student ID to evaluate'
+        required: true
+        type: string
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/144231203908/locations/global/workloadIdentityPools/githubpoolgcp/providers/githubactions
+          service_account: GCPAutoevaluation@astute-fort-470107-d0.iam.gserviceaccount.com
+          audience: https://github.com/assesslytica/gcpevals
+
+      - name: Show GCP Project
+        run: echo "PROJECT_ID=${{ steps.auth.outputs.project_id }}"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install google-cloud-dataproc google-cloud-storage
+
+      - name: Set GOOGLE_CLOUD_PROJECT env var
+        run: echo "GOOGLE_CLOUD_PROJECT=${{ steps.auth.outputs.project_id }}" >> $GITHUB_ENV
+
+      - name: Set STUDENT_ID env var
+        run: echo "STUDENT_ID=${{ github.event.inputs.student_id }}" >> $GITHUB_ENV
+
+      - name: Run evaluator
+        working-directory: evaluator-gcp-dataproc/scripts
+        run: |
+          python evaluate_dataproc.py ${{ github.event.inputs.student_id }}
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_report
+          path: evaluator-gcp-dataproc/scripts/test_report.log

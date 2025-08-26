@@ -1,0 +1,57 @@
+name: Evaluate GCP Cloud SQL Shared
+
+on:
+  workflow_dispatch:
+    inputs:
+      student_id:
+        description: 'Student ID (e.g. 12345)'
+        required: true
+        type: string
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDSQL_HOST: ${{ secrets.CLOUDSQL_HOST }}
+      CLOUDSQL_PORT: ${{ secrets.CLOUDSQL_PORT }}
+      CLOUDSQL_USER: ${{ secrets.CLOUDSQL_USER }}
+      CLOUDSQL_PASSWORD: ${{ secrets.CLOUDSQL_PASSWORD }}
+      CLOUDSQL_DBNAME: ${{ secrets.CLOUDSQL_DBNAME }}
+      BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+      STUDENT_ID: ${{ github.event.inputs.student_id }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (OIDC)
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r evaluator-gcp-cloudsql-shared/requirements.txt
+
+      - name: Run evaluator script
+        run: |
+          cd evaluator-gcp-cloudsql-shared/scripts
+          python evaluate_cloudsql_shared.py
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_report_${{ github.event.inputs.student_id }}
+          path: evaluator-gcp-cloudsql-shared/scripts/test_report.log
+
+      - name: Upload query output CSV
+        uses: actions/upload-artifact@v4
+        with:
+          name: query_output_${{ github.event.inputs.student_id }}
+          path: evaluator-gcp-cloudsql-shared/scripts/${{ github.event.inputs.student_id }}_query_output.csv

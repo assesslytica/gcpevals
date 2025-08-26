@@ -1,0 +1,60 @@
+name: Evaluate GCP Storage Case Study 2
+
+on:
+  workflow_dispatch:
+    inputs:
+      student_id:
+        description: 'Student ID (e.g. 12345)'
+        required: true
+        type: string
+      collab_email:
+        description: 'Collaborator email (e.g. user@example.com)'
+        required: true
+        type: string
+      download_student_id:
+        description: 'Student ID to download from (e.g. 67890)'
+        required: true
+        type: string
+      bucket_name:
+        description: 'Bucket name (e.g. ds-collab-shared)'
+        required: true
+        type: string
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    env:
+      BUCKET_NAME: ${{ github.event.inputs.bucket_name }}
+      STUDENT_ID: ${{ github.event.inputs.student_id }}
+      COLLAB_EMAIL: ${{ github.event.inputs.collab_email }}
+      DOWNLOAD_STUDENT_ID: ${{ github.event.inputs.download_student_id }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (OIDC)
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r evaluator-gcp-storage-casestudy2/requirements.txt
+
+      - name: Run evaluator script
+        run: |
+          cd evaluator-gcp-storage-casestudy2/scripts
+          python evaluate_storage_casestudy2.py
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_report_${{ github.event.inputs.student_id }}
+          path: evaluator-gcp-storage-casestudy2/scripts/test_report.log

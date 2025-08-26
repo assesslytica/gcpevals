@@ -1,0 +1,55 @@
+name: Evaluate GCP Storage Case Study 1
+
+on:
+  workflow_dispatch:
+    inputs:
+      student_id:
+        description: 'Student ID (e.g. 12345)'
+        required: true
+        type: string
+      team_email:
+        description: 'Team group email (e.g. media-team@example.com)'
+        required: true
+        type: string
+      bucket_name:
+        description: 'Bucket name (e.g. media-assets-shared)'
+        required: true
+        type: string
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    env:
+      BUCKET_NAME: ${{ github.event.inputs.bucket_name }}
+      STUDENT_ID: ${{ github.event.inputs.student_id }}
+      TEAM_EMAIL: ${{ github.event.inputs.team_email }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (OIDC)
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r evaluator-gcp-storage-casestudy1/requirements.txt
+
+      - name: Run evaluator script
+        run: |
+          cd evaluator-gcp-storage-casestudy1/scripts
+          python evaluate_storage_casestudy1.py
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_report_${{ github.event.inputs.student_id }}
+          path: evaluator-gcp-storage-casestudy1/scripts/test_report.log
