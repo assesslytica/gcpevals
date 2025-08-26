@@ -13,31 +13,29 @@ def log(msg):
     print(msg)
 
 def check_bucket(student_id):
-    # Bucket check is currently disabled/commented out as requested.
-    # global PASS, FAIL
-    # bucket_name = f"eval-{student_id}"
-    # client = storage.Client()
-    # try:
-    #     bucket = client.get_bucket(bucket_name)
-    #     if bucket.location.lower() != 'asia-south1':
-    #         log(f"FAIL: Bucket {bucket_name} not in asia-south1")
-    #         FAIL += 1
-    #         return
-    #     if not bucket.versioning_enabled:
-    #         log(f"FAIL: Bucket {bucket_name} does not have versioning enabled")
-    #         FAIL += 1
-    #         return
-    #     ubla = bucket.iam_configuration.uniform_bucket_level_access
-    #     if not ubla.enabled:
-    #         log(f"FAIL: Bucket {bucket_name} does not have UBLA enabled")
-    #         FAIL += 1
-    #         return
-    #     log(f"PASS: Bucket {bucket_name} meets all requirements")
-    #     PASS += 1
-    # except Exception as e:
-    #     log(f"FAIL: Bucket {bucket_name} not found or error: {e}")
-    #     FAIL += 1
-    log("Bucket check is currently disabled.")
+    global PASS, FAIL
+    bucket_name = f"eval-{student_id}"
+    client = storage.Client()
+    try:
+        bucket = client.get_bucket(bucket_name)
+        if bucket.location.lower() != 'asia-south1':
+            log(f"FAIL: Bucket {bucket_name} not in asia-south1")
+            FAIL += 1
+            return
+        if not bucket.versioning_enabled:
+            log(f"FAIL: Bucket {bucket_name} does not have versioning enabled")
+            FAIL += 1
+            return
+        ubla = bucket.iam_configuration.uniform_bucket_level_access
+        if not ubla.enabled:
+            log(f"FAIL: Bucket {bucket_name} does not have UBLA enabled")
+            FAIL += 1
+            return
+        log(f"PASS: Bucket {bucket_name} meets all requirements")
+        PASS += 1
+    except Exception as e:
+        log(f"FAIL: Bucket {bucket_name} not found or error: {e}")
+        FAIL += 1
 
 def check_pubsub_topic(student_id):
     global PASS, FAIL
