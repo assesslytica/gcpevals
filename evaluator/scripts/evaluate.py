@@ -5,8 +5,10 @@ from google.cloud import storage, pubsub_v1
 PASS = 0
 FAIL = 0
 
+LOG_PATH = os.path.join(os.path.dirname(__file__), "test_report.log")
+
 def log(msg):
-    with open('test_report.log', 'a') as f:
+    with open(LOG_PATH, 'w') as f:
         f.write(msg + '\n')
     print(msg)
 
@@ -60,7 +62,7 @@ def main():
         sys.exit(1)
     student_id = sys.argv[1]
     # Create/overwrite the log file and write a header
-    with open('test_report.log', 'w') as f:
+    with open(LOG_PATH, 'w') as f:
         f.write(f"Evaluation Report for student_id: {student_id}\n")
         f.write("----------------------------------------\n")
     check_bucket(student_id)
@@ -73,7 +75,7 @@ def main():
         log("OVERALL: FAIL")
     # Print the file contents for workflow logs and hint for download
     print("\n--- test_report.log contents ---")
-    with open('test_report.log', 'r') as f:
+    with open(LOG_PATH, 'r') as f:
         print(f.read())
     print("\nYou can download test_report.log from the workflow artifacts.")
 
