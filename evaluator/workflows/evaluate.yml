@@ -36,8 +36,9 @@ jobs:
           pip install google-cloud-storage google-cloud-pubsub
 
       - name: Run evaluator
+        working-directory: evaluator/scripts
         run: |
-          python evaluator/scripts/evaluate.py ${{ github.event.inputs.student_id }}
+          python evaluate.py ${{ github.event.inputs.student_id }}
 
       - name: Upload test report
         uses: actions/upload-artifact@v4
