@@ -1,0 +1,46 @@
+name: Evaluate GCP Student Resources
+
+on:
+  workflow_dispatch:
+    inputs:
+      student_id:
+        description: 'Student ID to evaluate'
+        required: true
+        type: string
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install google-cloud-storage google-cloud-pubsub
+
+      - name: Run evaluator
+        run: |
+          python evaluator/scripts/evaluate.py ${{ github.event.inputs.student_id }}
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_report
+          path: evaluator/scripts/test_report.log
